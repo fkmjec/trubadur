@@ -1,10 +1,12 @@
-#include <gtkmm.h>
 #include <displayer.hpp>
+#include <QApplication>
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-  auto app = Gtk::Application::create("org.gtkmm.examples.base");
+	QApplication a(argc, argv);
 
-  return app->make_window_and_run<Displayer>(argc, argv);
-  
+	Displayer dp;
+	dp.show();
+
+	return a.exec();
 }

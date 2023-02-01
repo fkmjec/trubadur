@@ -1,10 +1,9 @@
 #include "displayer.hpp"
+#include <QMainWindow>
 
-Displayer::Displayer() : displayed_frequency("125") {
+Displayer::Displayer(QWidget * parent) : QMainWindow(parent) {
     // TODO: add name setting from above
-    set_title("Ladicka");
-    set_child(displayed_frequency);
-}
+	setWindowTitle("Ladicka");
 
-Displayer::~Displayer() {
+	setMinimumSize(200, 200);
 }

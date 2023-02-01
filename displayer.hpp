@@ -1,16 +1,9 @@
-#ifndef __DISPLAYER_HPP
-#define __DISPLAYER_HPP
+#pragma once
 
-#include <gtkmm/window.h>
-#include <gtkmm/label.h>
+#include <QMainWindow>
 
-class Displayer : public Gtk::Window {
+class Displayer : public QMainWindow
+{
     public:
-        Displayer();
-        virtual ~Displayer();
-    
-    protected:
-        Gtk::Label displayed_frequency;
+        Displayer(QWidget * parent = nullptr);
 };
-
-#endif

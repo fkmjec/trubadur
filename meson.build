@@ -1,11 +1,11 @@
 project('ladicka', 'cpp',
   version : '0.1',
-  default_options : ['warning_level=3', 'cpp_std=c++17'])
+  default_options : ['warning_level=3', 'cpp_std=c++20'])
 
-gtkmm_dep = dependency('gtkmm-4.0', version: '>= 4.6.0')
+qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'])
 
 executable('ladicka',
            'main.cpp',
            'displayer.cpp',
            install : true,
-           dependencies: gtkmm_dep)
+           dependencies: [qt5_dep])
