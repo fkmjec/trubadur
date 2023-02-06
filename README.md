@@ -2,7 +2,8 @@
 [Ladicka] is a guitar tuner for the modern times. Written primarily so that I can learn how to work with sound, and also to learn CPP for a bit. 
 ## What needs to be done:
 * picking a name
-* picking libraries that I will use (FFTW, GTKmm)
+* picking libraries that I will use (FFTW, Qt)
+* example of audio input: https://doc.qt.io/qt-5/qtmultimedia-multimedia-audioinput-example.html
 * writing a simple window app to show the amount of sound that comes from the microphone
 * fouriering the signal according to the https://www.chciken.com/digital/signal/processing/2020/05/13/guitar-tuner.html
 * picking the tone the player is likely to be tuning

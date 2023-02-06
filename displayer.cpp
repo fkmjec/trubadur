@@ -2,6 +2,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QWidget>
+#include <iostream>
 
 #include "displayer.hpp"
 #include "audio_input.hpp"
