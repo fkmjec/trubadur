@@ -2,11 +2,16 @@
 #include <QObject>
 #include <QAudioSource>
 #include <QMediaDevices>
+#include <iostream>
+#include <vector>
 
 #include "displayer.hpp"
 #include "audio_input.hpp"
+#include "circular_buffer.hpp"
 
 const int SAMPLING_RATE = 48000;
+const double WINDOW = 0.5;
+const int BUFFER_SIZE = SAMPLING_RATE * WINDOW * 4;
 
 int main(int argc, char *argv[])
 {
@@ -24,6 +29,5 @@ int main(int argc, char *argv[])
 	QObject::connect(&audioReader, SIGNAL(levelChanged(double)), &dp, SLOT(showNumber(double)));
 	audioReader.start();
 	dp.show();
-
 	return a.exec();
 }

@@ -1,4 +1,5 @@
 #include "audio_input.hpp"
+#include <iostream>
 
 AudioReader::AudioReader(const QAudioFormat &format)
     : m_format(format)
@@ -42,6 +43,7 @@ qreal AudioReader::calculateLevel(const char *data, qint64 len) const
 
 qint64 AudioReader::writeData(const char *data, qint64 len)
 {
+    std::cout << len << "\n";
     m_level = calculateLevel(data, len);
 
     emit levelChanged(m_level);
