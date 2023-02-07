@@ -17,7 +17,7 @@ Displayer::Displayer(QWidget * parent) : QWidget(parent) {
 	setMinimumSize(200, 200);
 }
 
-void Displayer::showNumber(double number) {
+void Displayer::showNumber(float number) {
     this->frequency = number;
     this->shownText->setNum(this->frequency);
 }

@@ -7,6 +7,7 @@
 
 template<typename T> class CircularBuffer {
     public:
+        CircularBuffer();
         CircularBuffer(size_t size);
         std::vector<T> getLast(size_t count);
         void append(T element);
@@ -25,6 +26,16 @@ CircularBuffer<T>::CircularBuffer(size_t size) {
     this->start = 0;
     this->end = 0; // end is always where the new element should be appended
     this->size = size;
+    this->count = 0;
+}
+
+template <typename T>
+CircularBuffer<T>::CircularBuffer() {
+    // emty placeholder constructor
+    this->buffer.reserve(0);
+    this->start = 0;
+    this->end = 0; // end is always where the new element should be appended
+    this->size = 0;
     this->count = 0;
 }
 

@@ -18,6 +18,6 @@ class Displayer : public QWidget {
     public:
         Displayer(QWidget * parent = nullptr);
     public slots:
-        void showNumber(double number);
+        void showNumber(float number);
 };
 #endif

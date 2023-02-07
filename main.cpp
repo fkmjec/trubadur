@@ -8,6 +8,7 @@
 #include "displayer.hpp"
 #include "audio_input.hpp"
 #include "circular_buffer.hpp"
+#include "frequency_calculator.hpp"
 
 const int SAMPLING_RATE = 48000;
 const double WINDOW = 0.5;
@@ -21,12 +22,15 @@ int main(int argc, char *argv[])
 	QAudioFormat format;
 	format.setSampleRate(SAMPLING_RATE);
 	format.setChannelCount(1);
-	format.setSampleFormat(QAudioFormat::Int16); // TODO: is this the correct variant?
+	format.setSampleFormat(QAudioFormat::Float); // TODO: is this the correct variant?
 	QAudioSource audioSource(QMediaDevices::defaultAudioInput(), format);
+
 	AudioReader audioReader(format);
 	audioSource.start(&audioReader);
-
-	QObject::connect(&audioReader, SIGNAL(levelChanged(double)), &dp, SLOT(showNumber(double)));
+	FrequencyCalculator fcalc(SAMPLING_RATE * 2);
+	// connect the pipeline
+	QObject::connect(&audioReader, SIGNAL(newData(const char*, unsigned long)), &fcalc, SLOT(newData(const char*, unsigned long)));
+	QObject::connect(&fcalc, SIGNAL(frequencyChange(float)), &dp, SLOT(showNumber(float)));
 	audioReader.start();
 	dp.show();
 	return a.exec();

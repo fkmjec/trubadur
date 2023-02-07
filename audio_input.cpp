@@ -2,27 +2,22 @@
 #include <iostream>
 
 AudioReader::AudioReader(const QAudioFormat &format)
-    : m_format(format)
-{
+    : m_format(format) {
 }
 
-void AudioReader::start()
-{
+void AudioReader::start(){
     open(QIODevice::WriteOnly);
 }
 
-void AudioReader::stop()
-{
+void AudioReader::stop() {
     close();
 }
 
-qint64 AudioReader::readData(char * /* data */, qint64 /* maxlen */)
-{
+qint64 AudioReader::readData(char * /* data */, qint64 /* maxlen */) {
     return 0;
 }
 
-qreal AudioReader::calculateLevel(const char *data, qint64 len) const
-{
+qreal AudioReader::calculateLevel(const char *data, qint64 len) const {
     const int channelBytes = m_format.bytesPerSample();
     const int sampleBytes = m_format.bytesPerFrame();
     const int numSamples = len / sampleBytes;
@@ -41,12 +36,7 @@ qreal AudioReader::calculateLevel(const char *data, qint64 len) const
     return maxValue;
 }
 
-qint64 AudioReader::writeData(const char *data, qint64 len)
-{
-    std::cout << len << "\n";
-    m_level = calculateLevel(data, len);
-
-    emit levelChanged(m_level);
-
+qint64 AudioReader::writeData(const char *data, qint64 len) {
+    emit newData(data, len);
     return len;
 }

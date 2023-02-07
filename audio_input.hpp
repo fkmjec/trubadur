@@ -17,7 +17,7 @@ class AudioReader : public QIODevice {
 
         qreal calculateLevel(const char *data, qint64 len) const;
     signals:
-        void levelChanged(double level);
+        void newData(const char *data, unsigned long len);
 
     private:
         const QAudioFormat m_format;
