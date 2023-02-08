@@ -4,6 +4,7 @@ project('ladicka', 'cpp',
 
 qt6 = import('qt6')
 qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Widgets', 'Multimedia'])
+fftw_dep = dependency('fftw3')
 
 moc_files = qt6.compile_moc(headers : ['audio_input.hpp', 'displayer.hpp', 'frequency_calculator.hpp'],
                             extra_args: ['-DMAKES_MY_MOC_HEADER_COMPILE'],
@@ -16,4 +17,4 @@ executable('ladicka',
            'frequency_calculator.cpp',
            moc_files,
            install : true,
-           dependencies: [qt_dep])
+           dependencies: [qt_dep, fftw_dep])

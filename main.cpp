@@ -11,8 +11,7 @@
 #include "frequency_calculator.hpp"
 
 const int SAMPLING_RATE = 48000;
-const double WINDOW = 0.5;
-const int BUFFER_SIZE = SAMPLING_RATE * WINDOW * 4;
+const int WINDOW_SIZE = 24000;
 
 int main(int argc, char *argv[])
 {
@@ -27,7 +26,7 @@ int main(int argc, char *argv[])
 
 	AudioReader audioReader(format);
 	audioSource.start(&audioReader);
-	FrequencyCalculator fcalc(SAMPLING_RATE * 2);
+	FrequencyCalculator fcalc(SAMPLING_RATE * 2, SAMPLING_RATE, SAMPLING_RATE);
 	// connect the pipeline
 	QObject::connect(&audioReader, SIGNAL(newData(const char*, unsigned long)), &fcalc, SLOT(newData(const char*, unsigned long)));
 	QObject::connect(&fcalc, SIGNAL(frequencyChange(float)), &dp, SLOT(showNumber(float)));

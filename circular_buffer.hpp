@@ -12,12 +12,12 @@ template<typename T> class CircularBuffer {
         std::vector<T> getLast(size_t count);
         void append(T element);
         size_t size;
+        size_t count;
 
     private:
         std::vector<T> buffer;
         size_t start;
         size_t end;
-        size_t count;
 };
 
 template <typename T>
