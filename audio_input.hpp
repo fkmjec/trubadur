@@ -15,7 +15,6 @@ class AudioReader : public QIODevice {
         qint64 readData(char *data, qint64 maxlen) override;
         qint64 writeData(const char *data, qint64 len) override;
 
-        qreal calculateLevel(const char *data, qint64 len) const;
     signals:
         void newData(const char *data, unsigned long len);
 

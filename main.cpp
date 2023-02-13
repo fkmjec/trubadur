@@ -11,7 +11,6 @@
 #include "frequency_calculator.hpp"
 
 const int SAMPLING_RATE = 48000;
-const int WINDOW_SIZE = 24000;
 
 int main(int argc, char *argv[])
 {
