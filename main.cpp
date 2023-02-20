@@ -2,6 +2,7 @@
 #include <QObject>
 #include <QAudioSource>
 #include <QMediaDevices>
+#include <QTimer>
 #include <iostream>
 #include <vector>
 
@@ -11,6 +12,7 @@
 #include "frequency_calculator.hpp"
 
 const int SAMPLING_RATE = 48000;
+const int PROCESSING_INTERVAL_MS = 100;
 
 int main(int argc, char *argv[])
 {
@@ -29,6 +31,11 @@ int main(int argc, char *argv[])
 	// connect the pipeline
 	QObject::connect(&audioReader, SIGNAL(newData(const char*, unsigned long)), &fcalc, SLOT(newData(const char*, unsigned long)));
 	QObject::connect(&fcalc, SIGNAL(frequencyChange(float)), &dp, SLOT(showNumber(float)));
+
+	QTimer freqCalcTimer(&dp);
+    QObject::connect(&freqCalcTimer, SIGNAL(timeout()), &fcalc, SLOT(updateFrequency()));
+    freqCalcTimer.start(PROCESSING_INTERVAL_MS);
+
 	audioReader.start();
 	dp.show();
 	return a.exec();

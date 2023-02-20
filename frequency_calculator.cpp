@@ -4,6 +4,7 @@
 #include <cmath>
 #include <numbers>
 #include <stdexcept>
+#include <mutex>
 
 #include <fftw3.h>
 #include "frequency_calculator.hpp"
@@ -20,9 +21,6 @@ std::vector<double> getHannWindow(size_t length) {
     }
     return hanning;
 }
-
-
-
 
 
 void elementwiseMultiply(double* a, double* b, size_t length) {
@@ -56,21 +54,16 @@ void interpolateExpanded(double* spectrum, double* interpolated, size_t l1, size
 }
 
 
-void supressHarmonics(double* spectrum, size_t length) {
-    // FIXME: huge allocation that does not need to happen
-    double *newSpectrum = (double*)malloc(length * HARMONICS_RANGE * sizeof(double));
-
-    interpolateExpanded(spectrum, newSpectrum, length, HARMONICS_RANGE);
+void supressHarmonics(double* spectrum, double* expandedSpectrum, size_t length) {
+    interpolateExpanded(spectrum, expandedSpectrum, length, HARMONICS_RANGE);
 
     for (int h = 1; h <= HARMONICS_RANGE; h++) {
         for (size_t i = 0; i < length / h; i++) {
-            newSpectrum[i] = newSpectrum[i] * newSpectrum[i * h];
+            expandedSpectrum[i] = expandedSpectrum[i] * expandedSpectrum[i * h];
         }
     }
 
-    memcpy(spectrum, newSpectrum, length * sizeof(double));
-
-    free(newSpectrum);
+    memcpy(spectrum, expandedSpectrum, length * sizeof(double));
 }
 
 
@@ -98,28 +91,21 @@ void normalizeSpectrum(double *spectrum, size_t length) {
 }
 
 
-// void supressBelowMean(double* spectrum, size_t length, std::vector<double> octaveBorders, double freqStep) {
-//     size_t currentOctave = 0;
-//     double currentSum = 0;
-//     for (size_t i = 0; i < length; i++) {
-//         double freq = i * freqStep;
-//         if (freq > octaveBorders[currentOctave]) {
-//             // TODO: from lastIndex to this index, remove elements that are below the mean
-//             currentSum = 0;
-//             currentOctave += 1;
-//         } else {
-//             currentSum += spectrum[i];
-            
-//         }
-//     }
-// }
-
-
 FrequencyCalculator::FrequencyCalculator(size_t bufferSize, size_t windowLen, size_t samplingFreq) {
     this->signalBuffer = CircularBuffer<double>(bufferSize);
     this->windowLen = windowLen;
     this->samplingFreq = samplingFreq;
+    this->fftwInput = fftw_alloc_real(windowLen);
+    this->fftwOutput = fftw_alloc_real(windowLen);
+    this->spectrumExpanded = fftw_alloc_real(windowLen * HARMONICS_RANGE);
     // this->fftwPlan = fftw_plan_r2r_1d(windowLen, FFTW_FORWARD, FFTW_ESTIMATE);
+}
+
+
+FrequencyCalculator::~FrequencyCalculator() {
+    fftw_free(this->fftwInput);
+    fftw_free(this->fftwOutput);
+    free(spectrumExpanded);
 }
 
 
@@ -139,41 +125,44 @@ double FrequencyCalculator::findFrequencyPeak(double* spectrum, size_t windowLen
 }
 
 
-double FrequencyCalculator::calculateFrequency(size_t windowLen, size_t samplingFreq) {
-    // FIXME: useless copy
-    std::vector<double> window = this->signalBuffer.getLast(windowLen);
+void FrequencyCalculator::updateFrequency() {
+    if (this->signalBuffer.count >= this->windowLen) {
+        // update the frequency value
+        float freq = this->calculateFrequency(this->windowLen, this->samplingFreq);
+        emit frequencyChange(freq);
+    }
+}
 
-    double* fftwInput = &window[0];
+
+double FrequencyCalculator::calculateFrequency(size_t windowLen, size_t samplingFreq) {
+    this->signalBuffer.getLast(windowLen, this->fftwInput);
 
     // multiply with a window to supress spectrum leaks
     // TODO: allow for configuration of the window type?
     std::vector<double> hann = getHannWindow(windowLen);
-    elementwiseMultiply(fftwInput, hann.data(), windowLen);
+    elementwiseMultiply(this->fftwInput, hann.data(), windowLen);
     // for (int i = 0; i < windowLen; i++) {
     //     std::cout << fftwInput[i] << ' ';
     // }
     // std::cout << "\n";
 
-    // FIXME: useless allocation
-    double* fftwOutput = fftw_alloc_real(windowLen);
-
-    fftw_plan r2r_plan = fftw_plan_r2r_1d(windowLen, fftwInput, fftwOutput, FFTW_R2HC, FFTW_ESTIMATE);
+    fftw_plan r2r_plan = fftw_plan_r2r_1d(windowLen, this->fftwInput, this->fftwOutput, FFTW_R2HC, FFTW_ESTIMATE);
 
     fftw_execute(r2r_plan);
 
     double freqStep = samplingFreq / (double)windowLen;
 
-    removeMainsHumm(fftwOutput, freqStep);
+    removeMainsHumm(this->fftwOutput, freqStep);
 
-    normalizeSpectrum(fftwOutput, windowLen);
+    normalizeSpectrum(this->fftwOutput, windowLen);
 
-    supressHarmonics(fftwOutput, windowLen);
+    supressHarmonics(this->fftwOutput, this->spectrumExpanded, windowLen);
 
     // std::vector<double> octaveBorders = {63, 125, 250, 500, 1000, 2000, 4000, 6000, 8000, 16000, 32000};
 
     // supressBelowMean(fftwOutput, windowLen, octaveBorders);
 
-    double result = this->findFrequencyPeak(fftwOutput, windowLen, samplingFreq);
+    double result = this->findFrequencyPeak(this->fftwOutput, windowLen, samplingFreq);
 
     return result;
 }
@@ -185,10 +174,5 @@ void FrequencyCalculator::newData(const char *data, unsigned long len) {
     for (size_t i = 0; i < floatLen; i++) {
         // std::cout << floatData[i] << '\n';
         this->signalBuffer.append(floatData[i]);
-    }
-    if (this->signalBuffer.count >= this->windowLen) {
-        // update the frequency value
-        float freq = this->calculateFrequency(this->windowLen, this->samplingFreq);
-        emit frequencyChange(freq);
     }
 }

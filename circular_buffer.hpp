@@ -10,6 +10,7 @@ template<typename T> class CircularBuffer {
         CircularBuffer();
         CircularBuffer(size_t size);
         std::vector<T> getLast(size_t count);
+        void getLast(size_t count, T* copyTo);
         void append(T element);
         size_t size;
         size_t count;
@@ -63,5 +64,19 @@ std::vector<T> CircularBuffer<T>::getLast(size_t count) {
         retval.push_back(buffer[coord]);
     }
     return retval;
+}
+
+
+template <typename T>
+void CircularBuffer<T>::getLast(size_t count, T* copyTo) {
+    if (this->count < count) {
+        throw std::invalid_argument("Taking more elements from the buffer than the buffer contains");
+    }
+    std::vector<T> retval;
+    size_t start = ((this->end - count) + this->size) % this->size;
+    for (size_t i = 0; i < count; i++) {
+        size_t coord = (start + i) % this->size; 
+        copyTo[i] = buffer[coord];
+    }
 }
 #endif
