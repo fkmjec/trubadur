@@ -22,6 +22,9 @@ std::vector<double> getHannWindow(size_t length) {
 }
 
 
+
+
+
 void elementwiseMultiply(double* a, double* b, size_t length) {
     for (size_t i = 0; i < length; i++) {
         a[i] = a[i] * b[i];
@@ -36,14 +39,38 @@ void removeMainsHumm(double* spectrum, double freqStep) {
 }
 
 
+// a simple function to linearly interpolate the signal to a new length. We assume l2 is a multiple of l1
+void interpolateExpanded(double* spectrum, double* interpolated, size_t l1, size_t ratio) {
+    for (size_t i2 = 0; i2 < l1 * ratio; i2++) {
+        size_t i1Left = i2 / ratio;
+        size_t i1Right = i1Left + 1;
+        double left = spectrum[i1Left];
+        double right = 0;
+        if (i1Right < l1) {
+            right = spectrum[i1Right];
+        }
+
+        double delta = (i2 - (i2/ratio)) / ratio;
+        interpolated[i2] = left + (right - left) * delta;
+    }
+}
+
+
 void supressHarmonics(double* spectrum, size_t length) {
+    // FIXME: huge allocation that does not need to happen
+    double *newSpectrum = (double*)malloc(length * HARMONICS_RANGE * sizeof(double));
+
+    interpolateExpanded(spectrum, newSpectrum, length, HARMONICS_RANGE);
+
     for (int h = 1; h <= HARMONICS_RANGE; h++) {
-        for (size_t i = 0; i < length; i++) {
-            if (i * h < length) {
-                spectrum[i] = spectrum[i] * spectrum[i * h];
-            }
+        for (size_t i = 0; i < length / h; i++) {
+            newSpectrum[i] = newSpectrum[i] * newSpectrum[i * h];
         }
     }
+
+    memcpy(spectrum, newSpectrum, length * sizeof(double));
+
+    free(newSpectrum);
 }
 
 
@@ -107,11 +134,13 @@ double FrequencyCalculator::findFrequencyPeak(double* spectrum, size_t windowLen
             maximumIndex = i;
         }
     }
-    return maximumIndex * freqStep;
+    // FIXME: this is dumb, normalization with the harmonics range should happen at one place only
+    return maximumIndex * freqStep / HARMONICS_RANGE;
 }
 
 
 double FrequencyCalculator::calculateFrequency(size_t windowLen, size_t samplingFreq) {
+    // FIXME: useless copy
     std::vector<double> window = this->signalBuffer.getLast(windowLen);
 
     double* fftwInput = &window[0];
@@ -125,6 +154,7 @@ double FrequencyCalculator::calculateFrequency(size_t windowLen, size_t sampling
     // }
     // std::cout << "\n";
 
+    // FIXME: useless allocation
     double* fftwOutput = fftw_alloc_real(windowLen);
 
     fftw_plan r2r_plan = fftw_plan_r2r_1d(windowLen, fftwInput, fftwOutput, FFTW_R2HC, FFTW_ESTIMATE);
