@@ -10,7 +10,7 @@
 
 // TODO: move constants so that they are configurable
 const double MAINS_HUMM_THR = 62.0;
-const int HARMONICS_RANGE = 4;
+const int HARMONICS_RANGE = 5;
 
 std::vector<double> getHannWindow(size_t length) {
     std::vector<double> hanning;
@@ -43,6 +43,30 @@ void supressHarmonics(double* spectrum, size_t length) {
                 spectrum[i] = spectrum[i] * spectrum[i * h];
             }
         }
+    }
+}
+
+
+double getL2Norm(double* spectrum, size_t length) {
+    double norm = 0;
+    for (size_t i = 0; i < length; i++) {
+        norm += spectrum[i] * spectrum[i];
+    }
+    return sqrt(norm);
+}
+
+
+double getAvgSignalPower(double* spectrum, size_t length) {
+    double norm = getL2Norm(spectrum, length);
+    norm = norm * norm;
+    return sqrt(norm / length);
+}
+
+
+void normalizeSpectrum(double *spectrum, size_t length) {
+    double l2 = getL2Norm(spectrum, length);
+    for (size_t i = 0; i < length; i++) {
+        spectrum[i] = spectrum[i] / l2;
     }
 }
 
@@ -110,6 +134,9 @@ double FrequencyCalculator::calculateFrequency(size_t windowLen, size_t sampling
     double freqStep = samplingFreq / (double)windowLen;
 
     removeMainsHumm(fftwOutput, freqStep);
+
+    normalizeSpectrum(fftwOutput, windowLen);
+
     supressHarmonics(fftwOutput, windowLen);
 
     // std::vector<double> octaveBorders = {63, 125, 250, 500, 1000, 2000, 4000, 6000, 8000, 16000, 32000};
