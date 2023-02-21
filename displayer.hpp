@@ -8,11 +8,24 @@
 #include "audio_input.hpp"
 
 
+// class ToneDisplayer : public QWidget {
+//     Q_OBJECT
+    
+//     private:
+//         QLabel* toneLabel
+    
+//     public:
+//         ToneDisplayer();
+//         void setFrequency(double frequency);
+// };
+
+
 class Displayer : public QWidget {
     Q_OBJECT
     private:
         double frequency;
-        QLabel* shownText;
+        QLabel* frequencyLabel;
+        QLabel* toneLabel;
         QScopedPointer<AudioReader> audioReader;
 
     public:
