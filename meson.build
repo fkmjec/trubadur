@@ -15,6 +15,7 @@ executable('ladicka',
            'displayer.cpp',
            'audio_input.cpp',
            'frequency_calculator.cpp',
+           'tone_utils.cpp',
            moc_files,
            install : true,
            dependencies: [qt_dep, fftw_dep])

@@ -23,14 +23,16 @@
 class Displayer : public QWidget {
     Q_OBJECT
     private:
-        double frequency;
         QLabel* frequencyLabel;
         QLabel* toneLabel;
         QScopedPointer<AudioReader> audioReader;
 
+        void setNote(std::string& note);
+        void setFrequencies(double real, double desired);
+
     public:
         Displayer(QWidget * parent = nullptr);
     public slots:
-        void showNumber(float number);
+        void showPitch(float number);
 };
 #endif

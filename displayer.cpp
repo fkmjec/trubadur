@@ -7,7 +7,10 @@
 
 #include "displayer.hpp"
 #include "audio_input.hpp"
+#include "tone_utils.hpp"
 
+// FIXME: into a config object
+const double CONCERT_PITCH = 440.0;
 
 Displayer::Displayer(QWidget * parent) : QWidget(parent) {
     // TODO: add name setting from above
@@ -24,7 +27,7 @@ Displayer::Displayer(QWidget * parent) : QWidget(parent) {
 
     QFont toneFont("Arial", 50, QFont::Bold);
 
-    this->toneLabel = new QLabel("A#", this);
+    this->toneLabel = new QLabel("?", this);
     this->toneLabel->setMargin(20);
     this->toneLabel->setAlignment(Qt::AlignCenter);
 
@@ -36,13 +39,22 @@ Displayer::Displayer(QWidget * parent) : QWidget(parent) {
     vbox->addWidget(this->toneLabel);
     vbox->addWidget(this->frequencyLabel);
 
-
-
     setLayout(vbox);
 	setMinimumSize(200, 200);
 }
 
-void Displayer::showNumber(float number) {
-    this->frequency = number;
-    this->frequencyLabel->setNum(this->frequency);
+void Displayer::setFrequencies(double real, double desired) {
+    // FIXME: this Qstring crap is awful
+    std::string displayedString = std::to_string(real) + " / " + std::to_string(desired);
+    this->frequencyLabel->setText(QString::fromStdString(displayedString));
+}
+
+void Displayer::setNote(std::string& note) {
+    this->toneLabel->setText(QString::fromStdString(note));
+}
+
+void Displayer::showPitch(float number) {
+    std::pair<std::string, double> pitchNote = getClosestPitch(number, CONCERT_PITCH);
+    this->setFrequencies(number, pitchNote.second);
+    this->setNote(pitchNote.first);
 }

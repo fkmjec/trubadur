@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	FrequencyCalculator fcalc(SAMPLING_RATE * 2, SAMPLING_RATE, SAMPLING_RATE);
 	// connect the pipeline
 	QObject::connect(&audioReader, SIGNAL(newData(const char*, unsigned long)), &fcalc, SLOT(newData(const char*, unsigned long)));
-	QObject::connect(&fcalc, SIGNAL(frequencyChange(float)), &dp, SLOT(showNumber(float)));
+	QObject::connect(&fcalc, SIGNAL(frequencyChange(float)), &dp, SLOT(showPitch(float)));
 
 	QTimer freqCalcTimer(&dp);
     QObject::connect(&freqCalcTimer, SIGNAL(timeout()), &fcalc, SLOT(updateFrequency()));
