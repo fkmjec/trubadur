@@ -10,6 +10,7 @@
 #include "audio_input.hpp"
 #include "circular_buffer.hpp"
 #include "frequency_calculator.hpp"
+#include "config.hpp"
 
 const int SAMPLING_RATE = 48000;
 const int PROCESSING_INTERVAL_MS = 100;
@@ -18,7 +19,11 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
+	std::shared_ptr<Config> conf = std::make_shared<Config>();
 	Displayer dp;
+	ConfigPanel confPanel(conf);
+	FrequencyCalculator fcalc(SAMPLING_RATE * 2, SAMPLING_RATE, SAMPLING_RATE);
+
 	QAudioFormat format;
 	format.setSampleRate(SAMPLING_RATE);
 	format.setChannelCount(1);
@@ -27,7 +32,6 @@ int main(int argc, char *argv[])
 
 	AudioReader audioReader(format);
 	audioSource.start(&audioReader);
-	FrequencyCalculator fcalc(SAMPLING_RATE * 2, SAMPLING_RATE, SAMPLING_RATE);
 	// connect the pipeline
 	QObject::connect(&audioReader, SIGNAL(newData(const char*, unsigned long)), &fcalc, SLOT(newData(const char*, unsigned long)));
 	QObject::connect(&fcalc, SIGNAL(frequencyChange(float)), &dp, SLOT(showPitch(float)));
@@ -38,5 +42,6 @@ int main(int argc, char *argv[])
 
 	audioReader.start();
 	dp.show();
+	confPanel.show();
 	return a.exec();
 }
