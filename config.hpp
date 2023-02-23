@@ -4,10 +4,12 @@
 #include <QWidget>
 #include <QLabel>
 #include <QLineEdit>
+#include <QObject>
 #include <cstddef>
 #include <memory>
 
-class Config {
+class Config : public QObject {
+    Q_OBJECT
     public:
         Config();
 
@@ -25,6 +27,10 @@ class Config {
         void setWindowSize(size_t windowSize);
         size_t getBufferSize() const;
         void setBufferSize(size_t bufferSize);
+
+    signals:
+        void bufferSizeChanged();
+        void windowSizeChanged();
 
     private:
         double concertPitch;

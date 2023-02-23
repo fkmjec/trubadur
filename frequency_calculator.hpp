@@ -2,17 +2,20 @@
 #define __FREQUENCY_CALCULATOR_HPP
 
 #include <mutex>
+#include <memory>
 #include <QObject>
 #include <fftw3.h>
 #include "circular_buffer.hpp"
+#include "config.hpp"
+
+double findFrequencyPeak(double* spectrum, size_t windowSize, size_t samplingFreq);
 
 class FrequencyCalculator : public QObject {
     Q_OBJECT
 
     public:
-        FrequencyCalculator(size_t bufferSize, size_t windowLen, size_t samplingFreq);
+        FrequencyCalculator(std::shared_ptr<Config> config);
         ~FrequencyCalculator();
-
 
     signals:
         void frequencyChange(float frequency);
@@ -20,19 +23,17 @@ class FrequencyCalculator : public QObject {
     public slots:
         void newData(const char* data, unsigned long len);
         void updateFrequency();
+        void bufferSizeChanged();
+        void windowSizeChanged();
 
     private:
+        std::shared_ptr<Config> config;
         CircularBuffer<double> signalBuffer;
-
-        std::mutex freqCalcBufferLock;
         double* fftwInput;
         double* fftwOutput;
         double* spectrumExpanded;
-        size_t windowLen;
-        size_t samplingFreq;
         // fftw_plan fftwPlan;
-        double calculateFrequency(size_t windowSize, size_t samplingFreq);
-        double findFrequencyPeak(double* spectrum, size_t windowSize, size_t samplingFreq);
+        double calculateFrequency();
 };
 
 #endif

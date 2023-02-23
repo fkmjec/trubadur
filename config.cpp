@@ -6,7 +6,7 @@
 #include <QDoubleValidator>
 #include "config.hpp"
 
-Config::Config() {
+Config::Config() : QObject() {
         this->concertPitch = 440.0;
         this->mainsHummThr = 62.0;
         this->HPSSteps = 5;
@@ -59,6 +59,7 @@ void Config::setWindowSize(size_t windowSize) {
     } else {
         this->windowSize = windowSize;
     }
+    emit windowSizeChanged();
 }
 
 size_t Config::getBufferSize() const {
@@ -67,6 +68,7 @@ size_t Config::getBufferSize() const {
 
 void Config::setBufferSize(size_t size) {
     this->bufferSize = size;
+    emit bufferSizeChanged();
 }
 
 // slots for configpanel
@@ -118,20 +120,20 @@ ConfigPanel::ConfigPanel(std::shared_ptr<Config> config, QWidget * parent) : QWi
 
     this->windowSizeLabel = new QLabel("FFT window size", this);
     this->windowSize = new QLineEdit(QString::number(config->getWindowSize()), this);
-    this->windowSize->setValidator( new QIntValidator(0, 96000, this));
+    this->windowSize->setValidator( new QIntValidator(1000, 96000, this));
     formLayout->addRow(this->windowSizeLabel, this->windowSize);
 
     this->bufferSizeLabel = new QLabel("Saved buffer size", this);
     this->bufferSize = new QLineEdit(QString::number(config->getBufferSize()), this);
-    this->bufferSize->setValidator( new QIntValidator(0, 1000000, this));
+    this->bufferSize->setValidator( new QIntValidator(1000, 96000, this));
     formLayout->addRow(this->bufferSizeLabel, this->bufferSize);
 
     // connect all the slots to the lineedist signals
-    connect(this->concertPitch, &QLineEdit::textChanged, this, &ConfigPanel::concertPitchChanged);
-    connect(this->mainsHummThr, &QLineEdit::textChanged, this, &ConfigPanel::mainsHummThrChanged);
-    connect(this->HPSSteps, &QLineEdit::textChanged, this, &ConfigPanel::HPSStepsChanged);
-    connect(this->windowSize, &QLineEdit::textChanged, this, &ConfigPanel::windowSizeChanged);
-    connect(this->bufferSize, &QLineEdit::textChanged, this, &ConfigPanel::bufferSizeChanged);
+    connect(this->concertPitch, &QLineEdit::editingFinished, this, &ConfigPanel::concertPitchChanged);
+    connect(this->mainsHummThr, &QLineEdit::editingFinished, this, &ConfigPanel::mainsHummThrChanged);
+    connect(this->HPSSteps, &QLineEdit::editingFinished, this, &ConfigPanel::HPSStepsChanged);
+    connect(this->windowSize, &QLineEdit::editingFinished, this, &ConfigPanel::windowSizeChanged);
+    connect(this->bufferSize, &QLineEdit::editingFinished, this, &ConfigPanel::bufferSizeChanged);
 
     setLayout(formLayout);
 }

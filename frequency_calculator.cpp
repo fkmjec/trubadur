@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <string>
+#include <memory>
 #include <algorithm>
 #include <cmath>
 #include <numbers>
@@ -8,6 +10,7 @@
 
 #include <fftw3.h>
 #include "frequency_calculator.hpp"
+#include "config.hpp"
 
 // TODO: move constants so that they are configurable
 const double MAINS_HUMM_THR = 62.0;
@@ -91,14 +94,15 @@ void normalizeSpectrum(double *spectrum, size_t length) {
 }
 
 
-FrequencyCalculator::FrequencyCalculator(size_t bufferSize, size_t windowLen, size_t samplingFreq) {
-    this->signalBuffer = CircularBuffer<double>(bufferSize);
-    this->windowLen = windowLen;
-    this->samplingFreq = samplingFreq;
-    this->fftwInput = fftw_alloc_real(windowLen);
-    this->fftwOutput = fftw_alloc_real(windowLen);
-    this->spectrumExpanded = fftw_alloc_real(windowLen * HARMONICS_RANGE);
-    // this->fftwPlan = fftw_plan_r2r_1d(windowLen, FFTW_FORWARD, FFTW_ESTIMATE);
+FrequencyCalculator::FrequencyCalculator(std::shared_ptr<Config> config) {
+    this->config = config;
+    this->signalBuffer = CircularBuffer<double>(config->getBufferSize());
+    this->fftwInput = fftw_alloc_real(config->getWindowSize());
+    this->fftwOutput = fftw_alloc_real(config->getWindowSize());
+    this->spectrumExpanded = fftw_alloc_real(config->getWindowSize() * config->getHPSSteps());
+    // connect the config to the slots
+    QObject::connect(config.get(), &Config::bufferSizeChanged, this, &FrequencyCalculator::bufferSizeChanged);
+    QObject::connect(config.get(), &Config::windowSizeChanged, this, &FrequencyCalculator::windowSizeChanged);
 }
 
 
@@ -109,7 +113,7 @@ FrequencyCalculator::~FrequencyCalculator() {
 }
 
 
-double FrequencyCalculator::findFrequencyPeak(double* spectrum, size_t windowLen, size_t samplingFreq) {
+double findFrequencyPeak(double* spectrum, size_t windowLen, size_t samplingFreq) {
     size_t maximumIndex = 0;
     double peak = -1;
     double freqStep = samplingFreq / (double)windowLen;    
@@ -126,15 +130,18 @@ double FrequencyCalculator::findFrequencyPeak(double* spectrum, size_t windowLen
 
 
 void FrequencyCalculator::updateFrequency() {
-    if (this->signalBuffer.count >= this->windowLen) {
+    if (this->signalBuffer.count >= this->config->getWindowSize()) {
         // update the frequency value
-        float freq = this->calculateFrequency(this->windowLen, this->samplingFreq);
+        float freq = this->calculateFrequency();
         emit frequencyChange(freq);
     }
 }
 
 
-double FrequencyCalculator::calculateFrequency(size_t windowLen, size_t samplingFreq) {
+double FrequencyCalculator::calculateFrequency() {
+    size_t windowLen = config->getWindowSize();
+    size_t samplingFreq = config->getSampleRate();
+
     this->signalBuffer.getLast(windowLen, this->fftwInput);
 
     // multiply with a window to supress spectrum leaks
@@ -162,7 +169,7 @@ double FrequencyCalculator::calculateFrequency(size_t windowLen, size_t sampling
 
     // supressBelowMean(fftwOutput, windowLen, octaveBorders);
 
-    double result = this->findFrequencyPeak(this->fftwOutput, windowLen, samplingFreq);
+    double result = findFrequencyPeak(this->fftwOutput, windowLen, samplingFreq);
 
     return result;
 }
@@ -175,4 +182,21 @@ void FrequencyCalculator::newData(const char *data, unsigned long len) {
         // std::cout << floatData[i] << '\n';
         this->signalBuffer.append(floatData[i]);
     }
+}
+
+
+void FrequencyCalculator::bufferSizeChanged() {
+    std::cout << "buffer size changed\n";
+    size_t bufferSize = this->config->getBufferSize();
+    this->signalBuffer = CircularBuffer<double>(bufferSize);
+}
+
+
+void FrequencyCalculator::windowSizeChanged() {
+    std::cout << "window size changed\n";
+    size_t windowSize = this->config->getWindowSize();
+    fftw_free(this->fftwInput);
+    fftw_free(this->fftwOutput);
+    this->fftwInput = fftw_alloc_real(windowSize);
+    this->fftwOutput = fftw_alloc_real(windowSize);
 }

@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	std::shared_ptr<Config> conf = std::make_shared<Config>();
 	Displayer dp;
 	ConfigPanel confPanel(conf);
-	FrequencyCalculator fcalc(SAMPLING_RATE * 2, SAMPLING_RATE, SAMPLING_RATE);
+	FrequencyCalculator fcalc(conf);
 
 	QAudioFormat format;
 	format.setSampleRate(SAMPLING_RATE);
