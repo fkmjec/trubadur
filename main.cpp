@@ -3,6 +3,7 @@
 #include <QAudioSource>
 #include <QMediaDevices>
 #include <QTimer>
+#include <QMainWindow>
 #include <iostream>
 #include <vector>
 
@@ -12,20 +13,25 @@
 #include "frequency_calculator.hpp"
 #include "config.hpp"
 
-const int SAMPLING_RATE = 48000;
 const int PROCESSING_INTERVAL_MS = 100;
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
+    QWidget mainWindow;
+	QVBoxLayout* verticalLayout = new QVBoxLayout(&mainWindow); 
+
 	std::shared_ptr<Config> conf = std::make_shared<Config>();
 	Displayer dp;
 	ConfigPanel confPanel(conf);
 	FrequencyCalculator fcalc(conf);
 
+	verticalLayout->addWidget(&dp);
+	verticalLayout->addWidget(&confPanel);
+
 	QAudioFormat format;
-	format.setSampleRate(SAMPLING_RATE);
+	format.setSampleRate(conf->getSampleRate());
 	format.setChannelCount(1);
 	format.setSampleFormat(QAudioFormat::Float); // TODO: is this the correct variant?
 	QAudioSource audioSource(QMediaDevices::defaultAudioInput(), format);
@@ -41,7 +47,6 @@ int main(int argc, char *argv[])
     freqCalcTimer.start(PROCESSING_INTERVAL_MS);
 
 	audioReader.start();
-	dp.show();
-	confPanel.show();
+	mainWindow.show();
 	return a.exec();
 }
