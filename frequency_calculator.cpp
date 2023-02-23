@@ -109,7 +109,7 @@ FrequencyCalculator::FrequencyCalculator(std::shared_ptr<Config> config) {
 FrequencyCalculator::~FrequencyCalculator() {
     fftw_free(this->fftwInput);
     fftw_free(this->fftwOutput);
-    free(spectrumExpanded);
+    fftw_free(spectrumExpanded);
 }
 
 
@@ -152,11 +152,9 @@ double FrequencyCalculator::calculateFrequency() {
     //     std::cout << fftwInput[i] << ' ';
     // }
     // std::cout << "\n";
-
     fftw_plan r2r_plan = fftw_plan_r2r_1d(windowLen, this->fftwInput, this->fftwOutput, FFTW_R2HC, FFTW_ESTIMATE);
 
     fftw_execute(r2r_plan);
-
     double freqStep = samplingFreq / (double)windowLen;
 
     removeMainsHumm(this->fftwOutput, freqStep);
@@ -164,8 +162,6 @@ double FrequencyCalculator::calculateFrequency() {
     normalizeSpectrum(this->fftwOutput, windowLen);
 
     supressHarmonics(this->fftwOutput, this->spectrumExpanded, windowLen);
-
-    // std::vector<double> octaveBorders = {63, 125, 250, 500, 1000, 2000, 4000, 6000, 8000, 16000, 32000};
 
     // supressBelowMean(fftwOutput, windowLen, octaveBorders);
 
@@ -179,24 +175,24 @@ void FrequencyCalculator::newData(const char *data, unsigned long len) {
     float* floatData = (float*)data;
     size_t floatLen = len / 4; // FIXME, this could be an issue
     for (size_t i = 0; i < floatLen; i++) {
-        // std::cout << floatData[i] << '\n';
         this->signalBuffer.append(floatData[i]);
     }
 }
 
 
 void FrequencyCalculator::bufferSizeChanged() {
-    std::cout << "buffer size changed\n";
     size_t bufferSize = this->config->getBufferSize();
     this->signalBuffer = CircularBuffer<double>(bufferSize);
 }
 
 
 void FrequencyCalculator::windowSizeChanged() {
-    std::cout << "window size changed\n";
     size_t windowSize = this->config->getWindowSize();
     fftw_free(this->fftwInput);
     fftw_free(this->fftwOutput);
+    fftw_free(this->spectrumExpanded);
+
     this->fftwInput = fftw_alloc_real(windowSize);
     this->fftwOutput = fftw_alloc_real(windowSize);
+    this->spectrumExpanded = fftw_alloc_real(config->getWindowSize() * config->getHPSSteps());
 }
