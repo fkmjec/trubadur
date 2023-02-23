@@ -15,37 +15,123 @@ Config::Config() {
         this->bufferSize = 96000;
 }
 
+// implementation of all the getters and setters for Config class
+double Config::getConcertPitch() const {
+    return concertPitch;
+}
+
+void Config::setConcertPitch(double concertPitch) {
+    this->concertPitch = concertPitch;
+}
+
+double Config::getMainsHummThr() const {
+    return mainsHummThr;
+}
+
+void Config::setMainsHummThr(double mainsHummThr) {
+    // no need to validate here, we add an explicit check in the frequency calculator
+    this->mainsHummThr = mainsHummThr;
+}
+
+size_t Config::getHPSSteps() const {
+    return HPSSteps;
+}
+
+void Config::setHPSSteps(size_t HPSSteps) {
+    this->HPSSteps = HPSSteps;
+}
+
+size_t Config::getSampleRate() const {
+    return sampleRate;
+}
+
+void Config::setSampleRate(size_t sampleRate) {
+    this->sampleRate = sampleRate;
+}
+
+size_t Config::getWindowSize() const {
+    return windowSize;
+}
+
+void Config::setWindowSize(size_t windowSize) {
+    if (windowSize > bufferSize) {
+        this->windowSize = bufferSize;
+    } else {
+        this->windowSize = windowSize;
+    }
+}
+
+size_t Config::getBufferSize() const {
+    return bufferSize;
+}
+
+void Config::setBufferSize(size_t size) {
+    this->bufferSize = size;
+}
+
+// slots for configpanel
+void ConfigPanel::concertPitchChanged() {
+    config->setConcertPitch(this->concertPitch->text().toDouble());
+}
+
+void ConfigPanel::mainsHummThrChanged() {
+    config->setMainsHummThr(this->mainsHummThr->text().toDouble());
+}
+
+void ConfigPanel::HPSStepsChanged() {
+    config->setHPSSteps(this->HPSSteps->text().toInt());
+}
+
+void ConfigPanel::windowSizeChanged() {
+    config->setWindowSize(this->windowSize->text().toInt());
+    // do this because of validation
+    this->windowSize->setText(QString::number(config->getWindowSize()));
+}
+
+void ConfigPanel::bufferSizeChanged() {
+    config->setBufferSize(this->bufferSize->text().toInt());
+}
+
+void ConfigPanel::sampleRateChanged() {
+    config->setSampleRate(this->sampleRate->text().toInt());
+}
+
 ConfigPanel::ConfigPanel(std::shared_ptr<Config> config, QWidget * parent) : QWidget(parent) {
     this->config = config;
 
     QFormLayout *formLayout = new QFormLayout(this);
     
-    // FIXME: these values can overflow the buffer size. I should probably write my own config validator/truncate them on change
     this->concertPitchLabel = new QLabel("Concert pitch (Hz)", this);
-    this->concertPitch = new QLineEdit(QString::number(config->concertPitch), this);
+    this->concertPitch = new QLineEdit(QString::number(config->getConcertPitch()), this);
     this->concertPitch->setValidator( new QDoubleValidator(0, 1000, 2, this));
     formLayout->addRow(this->concertPitchLabel, this->concertPitch);
 
     this->mainsHummThrLabel = new QLabel("High pass filter (Hz)", this);
-    this->mainsHummThr = new QLineEdit(QString::number(config->mainsHummThr), this);
+    this->mainsHummThr = new QLineEdit(QString::number(config->getMainsHummThr()), this);
     this->mainsHummThr->setValidator( new QDoubleValidator(0, 1000, 2, this));
     formLayout->addRow(this->mainsHummThrLabel, this->mainsHummThr);
 
     this->HPSStepsLabel = new QLabel("Harmonics removal steps (1 = no removal)", this);
-    this->HPSSteps = new QLineEdit(QString::number(config->HPSSteps), this);
+    this->HPSSteps = new QLineEdit(QString::number(config->getHPSSteps()), this);
     this->HPSSteps->setValidator( new QIntValidator(0, 20, this));
     formLayout->addRow(this->HPSStepsLabel, this->HPSSteps);
 
     this->windowSizeLabel = new QLabel("FFT window size", this);
-    this->windowSize = new QLineEdit(QString::number(config->windowSize), this);
+    this->windowSize = new QLineEdit(QString::number(config->getWindowSize()), this);
     this->windowSize->setValidator( new QIntValidator(0, 96000, this));
     formLayout->addRow(this->windowSizeLabel, this->windowSize);
 
-
     this->bufferSizeLabel = new QLabel("Saved buffer size", this);
-    this->bufferSize = new QLineEdit(QString::number(config->bufferSize), this);
+    this->bufferSize = new QLineEdit(QString::number(config->getBufferSize()), this);
     this->bufferSize->setValidator( new QIntValidator(0, 1000000, this));
     formLayout->addRow(this->bufferSizeLabel, this->bufferSize);
+
+    // connect all the slots to the lineedist signals
+    connect(this->concertPitch, &QLineEdit::textChanged, this, &ConfigPanel::concertPitchChanged);
+    connect(this->mainsHummThr, &QLineEdit::textChanged, this, &ConfigPanel::mainsHummThrChanged);
+    connect(this->HPSSteps, &QLineEdit::textChanged, this, &ConfigPanel::HPSStepsChanged);
+    connect(this->windowSize, &QLineEdit::textChanged, this, &ConfigPanel::windowSizeChanged);
+    connect(this->bufferSize, &QLineEdit::textChanged, this, &ConfigPanel::bufferSizeChanged);
 
     setLayout(formLayout);
 }
