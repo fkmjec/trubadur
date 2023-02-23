@@ -25,6 +25,7 @@ class FrequencyCalculator : public QObject {
         void updateFrequency();
         void bufferSizeChanged();
         void windowSizeChanged();
+        void HPSStepsChanged();
 
     private:
         std::shared_ptr<Config> config;

@@ -31,6 +31,7 @@ class Config : public QObject {
     signals:
         void bufferSizeChanged();
         void windowSizeChanged();
+        void HPSStepsChanged();
 
     private:
         double concertPitch;

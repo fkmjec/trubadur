@@ -33,8 +33,8 @@ void elementwiseMultiply(double* a, double* b, size_t length) {
  }
 
 
-void removeMainsHumm(double* spectrum, double freqStep) {
-    for (int i = 0; i < MAINS_HUMM_THR/freqStep; i++) {
+void removeMainsHumm(double* spectrum, double mainsHummThr, double freqStep) {
+    for (int i = 0; i < mainsHummThr/freqStep; i++) {
         spectrum[i] = 0;
     }
 }
@@ -57,10 +57,10 @@ void interpolateExpanded(double* spectrum, double* interpolated, size_t l1, size
 }
 
 
-void supressHarmonics(double* spectrum, double* expandedSpectrum, size_t length) {
+void supressHarmonics(double* spectrum, double* expandedSpectrum, size_t length, size_t harmonicsRange) {
     interpolateExpanded(spectrum, expandedSpectrum, length, HARMONICS_RANGE);
 
-    for (int h = 1; h <= HARMONICS_RANGE; h++) {
+    for (size_t h = 1; h <= harmonicsRange; h++) {
         for (size_t i = 0; i < length / h; i++) {
             expandedSpectrum[i] = expandedSpectrum[i] * expandedSpectrum[i * h];
         }
@@ -103,6 +103,7 @@ FrequencyCalculator::FrequencyCalculator(std::shared_ptr<Config> config) {
     // connect the config to the slots
     QObject::connect(config.get(), &Config::bufferSizeChanged, this, &FrequencyCalculator::bufferSizeChanged);
     QObject::connect(config.get(), &Config::windowSizeChanged, this, &FrequencyCalculator::windowSizeChanged);
+    QObject::connect(config.get(), &Config::HPSStepsChanged, this, &FrequencyCalculator::HPSStepsChanged);
 }
 
 
@@ -157,11 +158,11 @@ double FrequencyCalculator::calculateFrequency() {
     fftw_execute(r2r_plan);
     double freqStep = samplingFreq / (double)windowLen;
 
-    removeMainsHumm(this->fftwOutput, freqStep);
+    removeMainsHumm(this->fftwOutput, this->config->getMainsHummThr(), freqStep);
 
     normalizeSpectrum(this->fftwOutput, windowLen);
 
-    supressHarmonics(this->fftwOutput, this->spectrumExpanded, windowLen);
+    supressHarmonics(this->fftwOutput, this->spectrumExpanded, windowLen, this->config->getHPSSteps());
 
     // supressBelowMean(fftwOutput, windowLen, octaveBorders);
 
@@ -194,5 +195,11 @@ void FrequencyCalculator::windowSizeChanged() {
 
     this->fftwInput = fftw_alloc_real(windowSize);
     this->fftwOutput = fftw_alloc_real(windowSize);
+    this->spectrumExpanded = fftw_alloc_real(config->getWindowSize() * config->getHPSSteps());
+}
+
+
+void FrequencyCalculator::HPSStepsChanged() {
+    fftw_free(this->spectrumExpanded);
     this->spectrumExpanded = fftw_alloc_real(config->getWindowSize() * config->getHPSSteps());
 }
