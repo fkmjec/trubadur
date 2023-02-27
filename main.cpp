@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 	QVBoxLayout* verticalLayout = new QVBoxLayout(&mainWindow); 
 
 	std::shared_ptr<Config> conf = std::make_shared<Config>();
-	Displayer dp;
+	Displayer dp(conf);
 	ConfigPanel confPanel(conf);
 	FrequencyCalculator fcalc(conf);
 

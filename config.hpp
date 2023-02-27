@@ -27,11 +27,16 @@ class Config : public QObject {
         void setWindowSize(size_t windowSize);
         size_t getBufferSize() const;
         void setBufferSize(size_t bufferSize);
+        size_t getNoteBufferSize() const;
+        void setNoteBufferSize(size_t noteBufferSize);
+
 
     signals:
         void bufferSizeChanged();
         void windowSizeChanged();
         void HPSStepsChanged();
+        void sampleRateChanged();
+        void noteBufferSizeChanged();
 
     private:
         double concertPitch;
@@ -41,7 +46,7 @@ class Config : public QObject {
         size_t sampleRate;
         size_t windowSize;
         size_t bufferSize;
-
+        size_t noteBufferSize;
 };
 
 

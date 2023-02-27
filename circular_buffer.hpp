@@ -32,7 +32,7 @@ CircularBuffer<T>::CircularBuffer(size_t size) {
 
 template <typename T>
 CircularBuffer<T>::CircularBuffer() {
-    // emty placeholder constructor
+    // empty placeholder constructor
     this->buffer.reserve(0);
     this->start = 0;
     this->end = 0; // end is always where the new element should be appended
@@ -42,13 +42,14 @@ CircularBuffer<T>::CircularBuffer() {
 
 template <typename T>
 void CircularBuffer<T>::append(T element) {
-    this->buffer[end] = element;
-    this->end = (this->end + 1) % this->size;
-    if (this->start == this->end && this->count != 0) {
-        // the buffer is full, we can shift the start as well
-        this->start = this->end;
-    } else {
+    if (this->count < this->size) {
+        this->buffer.push_back(element);
+        this->end = (this->end + 1) % this->size;
         this->count += 1;
+    } else {
+        this->buffer[this->end] = element;
+        this->end = (this->end + 1) % this->size;
+        this->start = this->end;
     }
 }
 

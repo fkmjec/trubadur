@@ -5,19 +5,11 @@
 #include <QLabel>
 #include <QWidget>
 
+#include <memory>
+
 #include "audio_input.hpp"
-
-
-// class ToneDisplayer : public QWidget {
-//     Q_OBJECT
-    
-//     private:
-//         QLabel* toneLabel
-    
-//     public:
-//         ToneDisplayer();
-//         void setFrequency(double frequency);
-// };
+#include "circular_buffer.hpp"
+#include "config.hpp"
 
 
 class Displayer : public QWidget {
@@ -26,12 +18,16 @@ class Displayer : public QWidget {
         QLabel* frequencyLabel;
         QLabel* toneLabel;
         QScopedPointer<AudioReader> audioReader;
+        CircularBuffer<std::string> noteBuffer;
+        std::shared_ptr<Config> config;
 
         void setNote(std::string& note);
         void setFrequencies(double real, double desired);
+        void setDefaultLabels();
+        bool isBufferConsistent();
 
     public:
-        Displayer(QWidget * parent = nullptr);
+        Displayer(std::shared_ptr<Config> conf, QWidget * parent = nullptr);
     public slots:
         void showPitch(float number);
 };

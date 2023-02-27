@@ -13,6 +13,7 @@ Config::Config() : QObject() {
         this->sampleRate = 48000;
         this->windowSize = 48000;
         this->bufferSize = 96000;
+        this->noteBufferSize = 5;
 }
 
 // implementation of all the getters and setters for Config class
@@ -47,6 +48,7 @@ size_t Config::getSampleRate() const {
 
 void Config::setSampleRate(size_t sampleRate) {
     this->sampleRate = sampleRate;
+    emit sampleRateChanged();
 }
 
 size_t Config::getWindowSize() const {
@@ -69,6 +71,15 @@ size_t Config::getBufferSize() const {
 void Config::setBufferSize(size_t size) {
     this->bufferSize = size;
     emit bufferSizeChanged();
+}
+
+size_t Config::getNoteBufferSize() const {
+    return noteBufferSize;
+}
+
+void Config::setNoteBufferSize(size_t noteBufferSize) {
+    this->noteBufferSize = noteBufferSize;
+    emit noteBufferSizeChanged();
 }
 
 // slots for configpanel
