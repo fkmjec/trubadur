@@ -13,7 +13,7 @@ Config::Config() : QObject() {
         this->sampleRate = 48000;
         this->windowSize = 48000;
         this->bufferSize = 96000;
-        this->noteBufferSize = 5;
+        this->noteBufferSize = 3;
 }
 
 // implementation of all the getters and setters for Config class
