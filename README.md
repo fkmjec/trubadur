@@ -19,3 +19,4 @@ The most should be self-evident - you run the application, you play the guitar s
 * a command-line interface. It would be very nice to be able to run the program without a window. Also, everything should be almost ready for it, it is just about implementing a switch and another class for an interface.
 * more configuration options in the window. There are some parameters (interval between calculations of frequencies...) that could be exposed to the user.
 * better filtering of sound input data
+* live time-frequency graph rendering

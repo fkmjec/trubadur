@@ -13,8 +13,6 @@
 #include "frequency_calculator.hpp"
 #include "config.hpp"
 
-const int PROCESSING_INTERVAL_MS = 100;
-
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
@@ -44,7 +42,7 @@ int main(int argc, char *argv[])
 
 	QTimer freqCalcTimer(&dp);
     QObject::connect(&freqCalcTimer, SIGNAL(timeout()), &fcalc, SLOT(updateFrequency()));
-    freqCalcTimer.start(PROCESSING_INTERVAL_MS);
+    freqCalcTimer.start(conf->getProcessingInterval());
 
 	audioReader.start();
 	mainWindow.show();

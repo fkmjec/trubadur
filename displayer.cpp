@@ -14,8 +14,7 @@
 
 
 Displayer::Displayer(std::shared_ptr<Config> conf, QWidget * parent) : QWidget(parent) {
-    // TODO: add name setting from above
-	setWindowTitle("Ladicka");
+	setWindowTitle("Trubadur");
     this->config = conf;
 
     this->noteBuffer = CircularBuffer<std::string>(config->getNoteBufferSize());
@@ -49,7 +48,6 @@ Displayer::Displayer(std::shared_ptr<Config> conf, QWidget * parent) : QWidget(p
 }
 
 void Displayer::setFrequencies(double real, double desired) {
-    // FIXME: this Qstring crap is awful
     std::string displayedString = std::to_string(real) + " / " + std::to_string(desired);
     this->frequencyLabel->setText(QString::fromStdString(displayedString));
 }

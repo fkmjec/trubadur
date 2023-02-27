@@ -12,9 +12,6 @@
 #include "frequency_calculator.hpp"
 #include "config.hpp"
 
-// TODO: move constants so that they are configurable
-const double MAINS_HUMM_THR = 62.0;
-const int HARMONICS_RANGE = 5;
 
 std::vector<double> getHannWindow(size_t length) {
     std::vector<double> hanning;
@@ -34,7 +31,7 @@ void elementwiseMultiply(double* a, double* b, size_t length) {
 
 
 void removeMainsHumm(double* spectrum, double mainsHummThr, double freqStep, size_t spectrumLen) {
-    for (int i = 0; i < mainsHummThr/freqStep; i++) {
+    for (size_t i = 0; i < mainsHummThr/freqStep; i++) {
         if (i >= spectrumLen) {
             break;
         }
@@ -61,7 +58,7 @@ void interpolateExpanded(double* spectrum, double* interpolated, size_t l1, size
 
 
 void supressHarmonics(double* spectrum, double* expandedSpectrum, size_t length, size_t harmonicsRange) {
-    interpolateExpanded(spectrum, expandedSpectrum, length, HARMONICS_RANGE);
+    interpolateExpanded(spectrum, expandedSpectrum, length, harmonicsRange);
 
     for (size_t h = 1; h <= harmonicsRange; h++) {
         for (size_t i = 0; i < length / h; i++) {
@@ -117,7 +114,7 @@ FrequencyCalculator::~FrequencyCalculator() {
 }
 
 
-double findFrequencyPeak(double* spectrum, size_t windowLen, size_t samplingFreq) {
+double findFrequencyPeak(double* spectrum, size_t windowLen, size_t samplingFreq, size_t harmonicsRange) {
     size_t maximumIndex = 0;
     double peak = -1;
     double freqStep = samplingFreq / (double)windowLen;    
@@ -128,8 +125,7 @@ double findFrequencyPeak(double* spectrum, size_t windowLen, size_t samplingFreq
             maximumIndex = i;
         }
     }
-    // FIXME: this is dumb, normalization with the harmonics range should happen at one place only
-    return maximumIndex * freqStep / HARMONICS_RANGE;
+    return maximumIndex * freqStep / harmonicsRange;
 }
 
 
@@ -149,13 +145,8 @@ double FrequencyCalculator::calculateFrequency() {
     this->signalBuffer.getLast(windowLen, this->fftwInput);
 
     // multiply with a window to supress spectrum leaks
-    // TODO: allow for configuration of the window type?
     std::vector<double> hann = getHannWindow(windowLen);
     elementwiseMultiply(this->fftwInput, hann.data(), windowLen);
-    // for (int i = 0; i < windowLen; i++) {
-    //     std::cout << fftwInput[i] << ' ';
-    // }
-    // std::cout << "\n";
     fftw_plan r2r_plan = fftw_plan_r2r_1d(windowLen, this->fftwInput, this->fftwOutput, FFTW_R2HC, FFTW_ESTIMATE);
 
     fftw_execute(r2r_plan);
@@ -167,9 +158,7 @@ double FrequencyCalculator::calculateFrequency() {
 
     supressHarmonics(this->fftwOutput, this->spectrumExpanded, windowLen, this->config->getHPSSteps());
 
-    // supressBelowMean(fftwOutput, windowLen, octaveBorders);
-
-    double result = findFrequencyPeak(this->fftwOutput, windowLen, samplingFreq);
+    double result = findFrequencyPeak(this->fftwOutput, windowLen, samplingFreq, this->config->getHPSSteps());
 
     return result;
 }
