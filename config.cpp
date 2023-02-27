@@ -11,9 +11,10 @@ Config::Config() : QObject() {
         this->mainsHummThr = 62.0;
         this->HPSSteps = 5;
         this->sampleRate = 48000;
-        this->windowSize = 48000;
+        this->windowSize = 96000;
         this->bufferSize = 96000;
         this->noteBufferSize = 3;
+        this->processingInterval = 200;
 }
 
 // implementation of all the getters and setters for Config class
@@ -80,6 +81,15 @@ size_t Config::getNoteBufferSize() const {
 void Config::setNoteBufferSize(size_t noteBufferSize) {
     this->noteBufferSize = noteBufferSize;
     emit noteBufferSizeChanged();
+}
+
+void Config::setProcessingInterval(size_t processingInterval) {
+    this->processingInterval = processingInterval;
+    emit processingIntervalChanged();
+}
+
+size_t Config::getProcessingInterval() const {
+    return processingInterval;
 }
 
 // slots for configpanel

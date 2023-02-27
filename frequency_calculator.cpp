@@ -33,8 +33,11 @@ void elementwiseMultiply(double* a, double* b, size_t length) {
  }
 
 
-void removeMainsHumm(double* spectrum, double mainsHummThr, double freqStep) {
+void removeMainsHumm(double* spectrum, double mainsHummThr, double freqStep, size_t spectrumLen) {
     for (int i = 0; i < mainsHummThr/freqStep; i++) {
+        if (i >= spectrumLen) {
+            break;
+        }
         spectrum[i] = 0;
     }
 }
@@ -158,7 +161,7 @@ double FrequencyCalculator::calculateFrequency() {
     fftw_execute(r2r_plan);
     double freqStep = samplingFreq / (double)windowLen;
 
-    removeMainsHumm(this->fftwOutput, this->config->getMainsHummThr(), freqStep);
+    removeMainsHumm(this->fftwOutput, this->config->getMainsHummThr(), freqStep, windowLen);
 
     normalizeSpectrum(this->fftwOutput, windowLen);
 

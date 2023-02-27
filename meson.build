@@ -1,5 +1,5 @@
-project('ladicka', 'cpp',
-  version : '0.1',
+project('trubadur', 'cpp',
+  version : '1.0',
   default_options : ['warning_level=3', 'cpp_std=c++20'])
 
 qt6 = import('qt6')
@@ -10,7 +10,7 @@ moc_files = qt6.compile_moc(headers : ['audio_input.hpp', 'displayer.hpp', 'freq
                             extra_args: ['-DMAKES_MY_MOC_HEADER_COMPILE'],
                             dependencies: qt_dep)
 
-executable('ladicka',
+executable('trubadur',
            'main.cpp',
            'displayer.cpp',
            'audio_input.cpp',

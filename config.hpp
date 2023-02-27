@@ -29,6 +29,8 @@ class Config : public QObject {
         void setBufferSize(size_t bufferSize);
         size_t getNoteBufferSize() const;
         void setNoteBufferSize(size_t noteBufferSize);
+        size_t getProcessingInterval() const;
+        void setProcessingInterval(size_t processingInteval);
 
 
     signals:
@@ -37,6 +39,7 @@ class Config : public QObject {
         void HPSStepsChanged();
         void sampleRateChanged();
         void noteBufferSizeChanged();
+        void processingIntervalChanged();
 
     private:
         double concertPitch;
@@ -47,6 +50,7 @@ class Config : public QObject {
         size_t windowSize;
         size_t bufferSize;
         size_t noteBufferSize;
+        size_t processingInterval;
 };
 
 

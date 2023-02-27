@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 	QAudioFormat format;
 	format.setSampleRate(conf->getSampleRate());
 	format.setChannelCount(1);
-	format.setSampleFormat(QAudioFormat::Float); // TODO: is this the correct variant?
+	format.setSampleFormat(QAudioFormat::Float);
 	QAudioSource audioSource(QMediaDevices::defaultAudioInput(), format);
 
 	AudioReader audioReader(format);
