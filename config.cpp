@@ -126,12 +126,12 @@ ConfigPanel::ConfigPanel(std::shared_ptr<Config> config, QWidget * parent) : QWi
     
     this->concertPitchLabel = new QLabel("Concert pitch (Hz)", this);
     this->concertPitch = new QLineEdit(QString::number(config->getConcertPitch()), this);
-    this->concertPitch->setValidator( new QDoubleValidator(0, 1000, 2, this));
+    this->concertPitch->setValidator( new QDoubleValidator(0, 20000, 2, this));
     formLayout->addRow(this->concertPitchLabel, this->concertPitch);
 
     this->mainsHummThrLabel = new QLabel("High pass filter (Hz)", this);
     this->mainsHummThr = new QLineEdit(QString::number(config->getMainsHummThr()), this);
-    this->mainsHummThr->setValidator( new QDoubleValidator(0, 1000, 2, this));
+    this->mainsHummThr->setValidator( new QDoubleValidator(0, 20000, 2, this));
     formLayout->addRow(this->mainsHummThrLabel, this->mainsHummThr);
 
     this->HPSStepsLabel = new QLabel("Harmonics removal steps (1 = no removal)", this);
@@ -141,12 +141,12 @@ ConfigPanel::ConfigPanel(std::shared_ptr<Config> config, QWidget * parent) : QWi
 
     this->windowSizeLabel = new QLabel("FFT window size", this);
     this->windowSize = new QLineEdit(QString::number(config->getWindowSize()), this);
-    this->windowSize->setValidator( new QIntValidator(1000, 96000, this));
+    this->windowSize->setValidator( new QIntValidator(1000, 1000000, this));
     formLayout->addRow(this->windowSizeLabel, this->windowSize);
 
     this->bufferSizeLabel = new QLabel("Saved buffer size", this);
     this->bufferSize = new QLineEdit(QString::number(config->getBufferSize()), this);
-    this->bufferSize->setValidator( new QIntValidator(1000, 96000, this));
+    this->bufferSize->setValidator( new QIntValidator(1000, 1000000, this));
     formLayout->addRow(this->bufferSizeLabel, this->bufferSize);
 
     // connect all the slots to the lineedist signals
