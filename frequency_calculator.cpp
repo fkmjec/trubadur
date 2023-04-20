@@ -150,6 +150,7 @@ double FrequencyCalculator::calculateFrequency() {
     fftw_plan r2r_plan = fftw_plan_r2r_1d(windowLen, this->fftwInput, this->fftwOutput, FFTW_R2HC, FFTW_ESTIMATE);
 
     fftw_execute(r2r_plan);
+    fftw_destroy_plan(r2r_plan);
     double freqStep = samplingFreq / (double)windowLen;
 
     removeMainsHumm(this->fftwOutput, this->config->getMainsHummThr(), freqStep, windowLen);
